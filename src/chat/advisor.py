@@ -12,6 +12,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.risk_manager import RiskManager
 from utils.alert_system import AlertSystem
 from data.onchain_data import OnChainDataCollector, WhaleDetector
+from data.professional_whale_metrics import ProfessionalWhaleMetrics
 
 
 class TradingAdvisor:
@@ -40,6 +41,9 @@ class TradingAdvisor:
         self.onchain_collector = OnChainDataCollector()
         self.whale_detector = WhaleDetector(whale_threshold=100)
         self.onchain_signals = None
+
+        # Métricas profesionales de ballenas (SOPR, MVRV, Exchange Flows, etc.)
+        self.professional_metrics = ProfessionalWhaleMetrics()
 
     def update_data(self):
         """Actualiza datos del mercado"""
@@ -172,33 +176,42 @@ class TradingAdvisor:
         avg_change = analysis['avg_change']
         confidence = analysis['confidence']
 
-        # Obtener señales on-chain y de ballenas
-        print("  🔗 Analizando señales on-chain...")
-        onchain = self.get_onchain_signals()
-        whale_analysis = self.detect_whales()
+        # Obtener MÉTRICAS PROFESIONALES DE BALLENAS (SOPR, MVRV, Exchange Flows, etc.)
+        print("  🐋 Analizando métricas profesionales de ballenas...")
+        professional_signals = self.professional_metrics.get_professional_signals(self.current_price)
 
-        # Ajustar confianza basado en señales on-chain
+        # Ajustar confianza basado en métricas profesionales
         onchain_boost = 0
         onchain_reasons = []
 
-        if onchain and whale_analysis:
-            # Análisis de ballenas
-            if whale_analysis.get('detected'):
-                whale_signal = whale_analysis.get('signal', '')
-                whale_count = whale_analysis.get('whale_count', 0)
+        if professional_signals:
+            overall_whale = professional_signals.get('overall_signal', {})
+            buy_score = overall_whale.get('buy_score', 0)
+            sell_score = overall_whale.get('sell_score', 0)
 
-                if 'ACUMULACIÓN' in whale_signal and whale_count > 10:
+            # Boost basado en señales profesionales
+            if 'COMPRAR' in overall_whale.get('action', ''):
+                if buy_score > 50:
+                    onchain_boost += 20  # Señal institucional fuerte
+                    onchain_reasons.append("🏦 Señales institucionales alcistas fuertes")
+                elif buy_score > 30:
                     onchain_boost += 15
-                    onchain_reasons.append(f"🐋 {whale_count} ballenas acumulando ({whale_analysis['total_volume']:,.0f} BTC)")
-                elif 'ACUMULACIÓN' in whale_signal and whale_count > 5:
+                    onchain_reasons.append("🏦 Señales institucionales alcistas")
+                else:
                     onchain_boost += 10
-                    onchain_reasons.append(f"🐋 Actividad de ballenas detectada ({whale_count} movimientos)")
+                    onchain_reasons.append("🏦 Señales institucionales moderadas")
 
-            # Señal general on-chain
-            overall_onchain = onchain.get('overall_signal', {})
-            if 'COMPRAR' in overall_onchain.get('action', ''):
-                onchain_boost += 10
-                onchain_reasons.append(f"⛓️ {overall_onchain.get('whale_signal', '')}")
+            elif 'VENDER' in overall_whale.get('action', ''):
+                if sell_score > 50:
+                    onchain_boost -= 20  # Señal bajista fuerte
+                    onchain_reasons.append("⚠️ Instituciones distribuyendo")
+                else:
+                    onchain_boost -= 10
+                    onchain_reasons.append("⚠️ Señales de distribución institucional")
+
+            # Agregar razones específicas de métricas
+            for reason in overall_whale.get('reasons', []):
+                onchain_reasons.append(reason)
 
         # Ajustar confianza final
         final_confidence = min(confidence + onchain_boost, 95)
@@ -401,36 +414,68 @@ class TradingAdvisor:
 
             return response
 
-        elif "ballena" in question or "whale" in question or "onchain" in question or "on-chain" in question or "on chain" in question:
-            whale_analysis = self.detect_whales()
-            onchain = self.get_onchain_signals()
+        elif "ballena" in question or "whale" in question or "onchain" in question or "on-chain" in question or "on chain" in question or "metricas" in question or "profesional" in question:
+            # Obtener MÉTRICAS PROFESIONALES DE BALLENAS
+            prof_signals = self.professional_metrics.get_professional_signals(self.current_price)
 
-            response = "🐋 ANÁLISIS DE BALLENAS Y ON-CHAIN\n\n"
+            response = "🏦 MÉTRICAS PROFESIONALES DE BALLENAS\n"
+            response += "=" * 50 + "\n\n"
 
-            # Información de ballenas
-            if whale_analysis and whale_analysis.get('detected'):
-                response += f"⚠️ ACTIVIDAD DE BALLENAS DETECTADA\n\n"
-                response += f"Transacciones Grandes: {whale_analysis['whale_count']}\n"
-                response += f"Volumen Total: {whale_analysis['total_volume']:,.2f} BTC\n"
-                response += f"Señal: {whale_analysis['signal']}\n"
-                response += f"Confianza: {whale_analysis['confidence']}%\n\n"
-                response += f"💡 {whale_analysis['message']}\n\n"
-                response += f"🎯 Recomendación: {whale_analysis['recommendation']}"
+            # Señal general
+            if prof_signals:
+                overall = prof_signals.get('overall_signal', {})
+                response += f"🎯 SEÑAL INSTITUCIONAL: {overall.get('action', 'N/A')}\n"
+                response += f"📊 Confianza: {overall.get('confidence', 0):.1f}%\n"
+                response += f"📈 Buy Score: {overall.get('buy_score', 0):.1f}\n"
+                response += f"📉 Sell Score: {overall.get('sell_score', 0):.1f}\n\n"
 
-                if whale_analysis.get('transactions'):
-                    response += "\n\n📊 ÚLTIMAS TRANSACCIONES GRANDES:\n"
-                    for i, tx in enumerate(whale_analysis['transactions'][:3], 1):
-                        response += f"  {i}. {tx['size_btc']:,.2f} BTC - {tx['time'].strftime('%H:%M:%S')}\n"
-            else:
-                response += "No se detectó actividad significativa de ballenas.\n\n"
+                response += "💡 RAZONES PRINCIPALES:\n"
+                for reason in overall.get('reasons', []):
+                    response += f"  • {reason}\n"
 
-            # Señales on-chain
-            if onchain:
-                overall = onchain.get('overall_signal', {})
-                response += f"\n⛓️ SEÑAL ON-CHAIN GENERAL\n\n"
-                response += f"Acción: {overall.get('action', 'N/A')}\n"
-                response += f"Confianza: {overall.get('confidence', 0):.1f}%\n"
-                response += f"Razón: {overall.get('reasoning', 'N/A')}"
+                # MVRV
+                if prof_signals.get('mvrv'):
+                    mvrv = prof_signals['mvrv']
+                    response += f"\n📊 MVRV (Market Value / Realized Value)\n"
+                    response += f"  Valor: {mvrv['value']:.2f}\n"
+                    response += f"  Señal: {mvrv['signal']}\n"
+                    response += f"  Acción: {mvrv['action']}\n"
+                    response += f"  {mvrv['reason']}\n"
+
+                # SOPR
+                if prof_signals.get('sopr'):
+                    sopr = prof_signals['sopr']
+                    response += f"\n💎 SOPR (Spent Output Profit Ratio)\n"
+                    response += f"  Valor: {sopr['value']:.3f}\n"
+                    response += f"  Señal: {sopr['signal']}\n"
+                    response += f"  Acción: {sopr['action']}\n"
+                    response += f"  {sopr['interpretation']}\n"
+
+                # Large Transactions
+                if prof_signals.get('large_transactions'):
+                    large_tx = prof_signals['large_transactions']
+                    response += f"\n🐋 TRANSACCIONES GRANDES (>100 BTC)\n"
+                    response += f"  Ballenas detectadas: {large_tx['whale_count']}\n"
+                    response += f"  Volumen total: {large_tx['total_volume_btc']:,.2f} BTC\n"
+                    response += f"  Señal: {large_tx['signal']}\n"
+                    response += f"  {large_tx['reason']}\n"
+
+                # Exchange Flows
+                if prof_signals.get('exchange_flows'):
+                    flows = prof_signals['exchange_flows']
+                    response += f"\n⛓️ EXCHANGE FLOWS\n"
+                    response += f"  Volumen 24h: {flows['trade_volume_btc']:,.0f} BTC\n"
+                    response += f"  Flujo: {flows['flow_signal']}\n"
+                    response += f"  Señal: {flows['signal']}\n"
+                    response += f"  {flows['reason']}\n"
+
+                # Active Addresses
+                if prof_signals.get('active_addresses'):
+                    active = prof_signals['active_addresses']
+                    response += f"\n📍 ACTIVE ADDRESSES\n"
+                    response += f"  Estimadas: {active['estimated_active']:,.0f}\n"
+                    response += f"  Señal: {active['signal']}\n"
+                    response += f"  {active['reason']}\n"
 
             return response
 
@@ -541,9 +586,13 @@ ANÁLISIS Y PREDICCIONES:
 4. "¿Cómo están los indicadores?" - Indicadores técnicos (RSI, MACD)
 5. "Análisis completo" - Reporte detallado del mercado
 
-DATOS ON-CHAIN (NUEVO):
-6. "Ballenas" / "Whales" / "On-chain" - Detecta movimientos de ballenas
-   └─ Analiza transacciones grandes y señales blockchain
+MÉTRICAS PROFESIONALES DE BALLENAS:
+6. "Ballenas" / "Métricas profesionales" - Análisis institucional completo
+   ├─ SOPR (Spent Output Profit Ratio)
+   ├─ MVRV (Market Value / Realized Value)
+   ├─ Exchange Flows (flujos de exchanges)
+   ├─ Large Transactions (>100 BTC)
+   └─ Active Addresses (actividad de red)
 
 GESTIÓN DE RIESGO:
 7. "¿Cuánto comprar?" / "Position size" - Cálculo de tamaño de posición
@@ -558,7 +607,8 @@ ALERTAS:
 13. "Ayuda" - Muestra este mensaje
 
 💡 Puedes hacer preguntas en lenguaje natural!
-🐋 Las recomendaciones ahora incluyen análisis de ballenas automáticamente!"""
+🏦 Usa métricas profesionales de instituciones (SOPR, MVRV, etc.)
+🐋 Las recomendaciones incluyen análisis institucional automáticamente!"""
 
         elif "analisis completo" in question or "reporte" in question:
             rec = self.get_recommendation()
