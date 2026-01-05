@@ -397,66 +397,36 @@ if show_table
 // Alerta de COMPRAR FUERTE
 alertcondition(buy_strong_signal,
               title="🟢 COMPRAR FUERTE",
-              message="🐋 WHALE ALERT: COMPRAR FUERTE\n" +
-                      "Precio: {{close}}\n" +
-                      "Score: " + str.tostring(total_score) + "\n" +
-                      "MVRV: " + str.tostring(mvrv) + " " + mvrv_signal + "\n" +
-                      "SOPR: " + str.tostring(sopr) + " " + sopr_signal + "\n" +
-                      "Confianza: " + str.tostring(confidence) + "%")
+              message="🐋 WHALE ALERT: COMPRAR FUERTE - Precio: {{close}} - Señal institucional detectada. Score muy alto. Revisar métricas en chart.")
 
 // Alerta de COMPRAR
 alertcondition(buy_signal,
               title="🟢 COMPRAR",
-              message="🐋 Whale Signal: COMPRAR\n" +
-                      "Precio: {{close}}\n" +
-                      "Score: " + str.tostring(total_score) + "\n" +
-                      "MVRV: " + str.tostring(mvrv) + "\n" +
-                      "SOPR: " + str.tostring(sopr))
+              message="🐋 Whale Signal: COMPRAR - Precio: {{close}} - Métricas favorables detectadas. Revisar tabla en chart.")
 
 // Alerta de VENDER
 alertcondition(sell_signal,
               title="🔴 VENDER",
-              message="⚠️ Whale Alert: VENDER\n" +
-                      "Precio: {{close}}\n" +
-                      "Score: " + str.tostring(total_score) + "\n" +
-                      "MVRV: " + str.tostring(mvrv) + " (ZONA ROJA)\n" +
-                      "SOPR: " + str.tostring(sopr))
+              message="⚠️ Whale Alert: VENDER - Precio: {{close}} - MVRV en zona roja. Score negativo. Considerar tomar ganancias.")
 
 // Alerta de VENDER FUERTE
 alertcondition(sell_strong_signal,
               title="🔴🔴 VENDER FUERTE",
-              message="🚨 WHALE ALERT: VENDER FUERTE 🚨\n" +
-                      "Precio: {{close}}\n" +
-                      "Score: " + str.tostring(total_score) + "\n" +
-                      "MVRV: " + str.tostring(mvrv) + " (EXTREMO)\n" +
-                      "SOPR: " + str.tostring(sopr) + " (EUFORIA)\n" +
-                      "¡TOPE DE MERCADO PROBABLE!")
+              message="🚨 WHALE ALERT: VENDER FUERTE - Precio: {{close}} - MVRV EXTREMO + SOPR EUFORIA. TOPE DE MERCADO PROBABLE. Vender inmediatamente!")
 
 // Alerta de MVRV Extremo
 alertcondition(mvrv < 0.8,
               title="💎 MVRV BOTTOM (<0.8)",
-              message="💎💎 OPORTUNIDAD HISTÓRICA 💎💎\n" +
-                      "MVRV: " + str.tostring(mvrv) + "\n" +
-                      "Precio: {{close}}\n" +
-                      "Históricamente: 100% win rate\n" +
-                      "Profit promedio: +500-1400% en 1 año")
+              message="💎💎 OPORTUNIDAD HISTÓRICA - Precio: {{close}} - MVRV <0.8 detectado. Históricamente: 100% win rate, +500-1400% profit en 1 año. COMPRAR FUERTE!")
 
 alertcondition(mvrv > 3.5,
               title="🚨 MVRV TOP (>3.5)",
-              message="🚨🚨 ZONA DE PELIGRO 🚨🚨\n" +
-                      "MVRV: " + str.tostring(mvrv) + "\n" +
-                      "Precio: {{close}}\n" +
-                      "Históricamente: Precedió caídas del 50-80%\n" +
-                      "CONSIDERAR VENDER")
+              message="🚨🚨 ZONA DE PELIGRO - Precio: {{close}} - MVRV >3.5 detectado. Históricamente precedió caídas del 50-80%. CONSIDERAR VENDER INMEDIATAMENTE!")
 
 // Alerta de SOPR Capitulación
 alertcondition(sopr < 0.95,
               title="📉 SOPR CAPITULACIÓN (<0.95)",
-              message="📉 CAPITULACIÓN DETECTADA\n" +
-                      "SOPR: " + str.tostring(sopr) + "\n" +
-                      "Precio: {{close}}\n" +
-                      "Holders vendiendo con pérdidas\n" +
-                      "Históricamente marca bottoms perfectos")
+              message="📉 CAPITULACIÓN DETECTADA - Precio: {{close}} - SOPR <0.95. Holders vendiendo con pérdidas. Históricamente marca bottoms perfectos. COMPRAR!")
 
 // ============================================================================
 // NOTAS DE IMPLEMENTACIÓN
