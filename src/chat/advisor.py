@@ -5,10 +5,16 @@ Sistema de asesoramiento inteligente basado en predicciones del modelo
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.risk_manager import RiskManager
+from utils.alert_system import AlertSystem
 
 
 class TradingAdvisor:
-    def __init__(self, predictor, data_collector, feature_engineer):
+    def __init__(self, predictor, data_collector, feature_engineer, initial_capital=10000):
         """
         Inicializa el asesor de trading
 
@@ -16,6 +22,7 @@ class TradingAdvisor:
             predictor: Instancia del BTCPredictor
             data_collector: Instancia del BTCDataCollector
             feature_engineer: Instancia del FeatureEngineer
+            initial_capital: Capital inicial en USDT
         """
         self.predictor = predictor
         self.data_collector = data_collector
@@ -23,6 +30,10 @@ class TradingAdvisor:
         self.current_data = None
         self.predictions = None
         self.current_price = None
+
+        # Risk management y alertas
+        self.risk_manager = RiskManager(initial_capital=initial_capital)
+        self.alert_system = AlertSystem()
 
     def update_data(self):
         """Actualiza datos del mercado"""
@@ -293,15 +304,124 @@ class TradingAdvisor:
 
             return response
 
+        elif "capital" in question or "balance" in question or "portafolio" in question:
+            stats = self.risk_manager.get_performance_stats()
+            response = f"💰 ESTADO DEL PORTAFOLIO\n\n"
+            response += f"Capital Inicial: ${stats['initial_capital']:,.2f}\n"
+            response += f"Capital Actual: ${stats['current_capital']:,.2f}\n"
+            response += f"P&L Total: ${stats['total_pnl']:,.2f} ({stats['total_pnl_pct']:+.2f}%)\n\n"
+
+            if stats['total_trades'] > 0:
+                response += f"📊 ESTADÍSTICAS\n"
+                response += f"Total Trades: {stats['total_trades']}\n"
+                response += f"Win Rate: {stats['win_rate']:.2f}%\n"
+                response += f"Ganancia Promedio: ${stats['avg_win']:,.2f}\n"
+                response += f"Pérdida Promedio: ${stats['avg_loss']:,.2f}\n"
+                response += f"Profit Factor: {stats['profit_factor']:.2f}\n"
+                response += f"Sharpe Ratio: {stats['sharpe_ratio']:.2f}"
+
+            return response
+
+        elif "riesgo" in question or "position size" in question or "cuanto comprar" in question:
+            rec = self.get_recommendation()
+            entry_price = self.current_price
+            stop_loss = rec['stop_loss']
+
+            position_size = self.risk_manager.calculate_position_size(
+                entry_price,
+                stop_loss,
+                confidence=rec['confidence']/100
+            )
+
+            response = f"📊 CÁLCULO DE POSICIÓN\n\n"
+            response += f"💰 Precio de Entrada: ${entry_price:,.2f}\n"
+            response += f"🛡️ Stop Loss: ${stop_loss:,.2f}\n\n"
+            response += f"Tamaño de Posición:\n"
+            response += f"  BTC: {position_size['position_size_btc']:.8f}\n"
+            response += f"  USDT: ${position_size['position_size_usdt']:,.2f}\n\n"
+            response += f"Capital en Riesgo: ${position_size['capital_at_risk']:,.2f} ({position_size['risk_percentage']:.2f}%)\n"
+            response += f"Riesgo por Unidad: {position_size['risk_per_unit']:.2f}%"
+
+            return response
+
+        elif "alerta" in question and "crear" in question:
+            return """🔔 CREAR ALERTAS
+
+Para crear una alerta, usa:
+- "Crear alerta de precio X" - Alerta cuando BTC llegue a precio X
+- "Crear alerta RSI bajo 30" - Alerta cuando RSI esté bajo 30
+- "Crear alerta confianza alta" - Alerta cuando predicción tenga confianza >75%
+
+Ejemplos:
+- "Crear alerta de precio 50000"
+- "Crear alerta RSI bajo 30"
+- "Crear alerta confianza 80"
+"""
+
+        elif "alerta" in question and "ver" in question:
+            active = self.alert_system.get_active_alerts()
+            if not active:
+                return "No tienes alertas activas."
+
+            response = "🔔 ALERTAS ACTIVAS\n\n"
+            for i, alert in enumerate(active, 1):
+                response += f"{i}. {alert['message']}\n"
+            return response
+
+        elif "performance" in question or "rendimiento" in question or "estadisticas" in question:
+            stats = self.risk_manager.get_performance_stats()
+            risk_status = self.risk_manager.check_risk_limits()
+
+            response = f"📊 RENDIMIENTO Y ESTADÍSTICAS\n\n"
+            response += f"💰 Capital: ${stats['current_capital']:,.2f} ({stats['capital_pct']:.1f}%)\n"
+            response += f"📈 P&L: ${stats['total_pnl']:,.2f} ({stats['total_pnl_pct']:+.2f}%)\n\n"
+
+            if stats['total_trades'] > 0:
+                response += f"TRADES\n"
+                response += f"  Total: {stats['total_trades']}\n"
+                response += f"  Ganadores: {stats['winning_trades']} ✅\n"
+                response += f"  Perdedores: {stats['losing_trades']} ❌\n"
+                response += f"  Win Rate: {stats['win_rate']:.2f}%\n\n"
+
+                response += f"MÉTRICAS\n"
+                response += f"  Ganancia Promedio: ${stats['avg_win']:,.2f}\n"
+                response += f"  Pérdida Promedio: ${stats['avg_loss']:,.2f}\n"
+                response += f"  Profit Factor: {stats['profit_factor']:.2f}\n"
+                response += f"  Sharpe Ratio: {stats['sharpe_ratio']:.2f}\n\n"
+
+            response += f"⚠️ RIESGO\n"
+            response += f"  Drawdown: {risk_status['drawdown']:.2f}%\n"
+            response += f"  Pérdida Diaria: {risk_status['daily_loss_pct']:.2f}%\n"
+            response += f"  Puede Operar: {'✅ Sí' if risk_status['can_trade'] else '❌ No'}"
+
+            if risk_status['warnings']:
+                response += "\n\n⚠️ ADVERTENCIAS:\n"
+                for warning in risk_status['warnings']:
+                    response += f"  - {warning}\n"
+
+            return response
+
         elif "ayuda" in question or "que puedes" in question or "comandos" in question:
             return """🤖 COMANDOS DISPONIBLES:
 
+ANÁLISIS Y PREDICCIONES:
 1. "¿Cuál es el precio actual?" - Precio actual de BTC/USDT
 2. "¿Debería comprar/vender?" - Recomendación de trading
 3. "¿Cuál es la tendencia?" - Análisis de tendencia y predicciones
 4. "¿Cómo están los indicadores?" - Indicadores técnicos (RSI, MACD)
 5. "Análisis completo" - Reporte detallado del mercado
-6. "Ayuda" - Muestra este mensaje
+
+GESTIÓN DE RIESGO:
+6. "¿Cuánto comprar?" / "Position size" - Cálculo de tamaño de posición
+7. "Balance" / "Capital" - Estado del portafolio
+8. "Performance" / "Estadísticas" - Métricas de rendimiento
+
+ALERTAS:
+9. "Crear alerta" - Información sobre alertas
+10. "Ver alertas" - Alertas activas
+
+11. "Actualizar" - Actualiza datos del mercado
+12. "Ayuda" - Muestra este mensaje
 
 💡 Puedes hacer preguntas en lenguaje natural!"""
 

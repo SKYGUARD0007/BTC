@@ -1,37 +1,66 @@
-# 🚀 BTC/USDT AI Prediction Model with Interactive Chat
+# 🚀 BTC/USDT Professional AI Trading System
 
-Sistema avanzado de predicción de Bitcoin usando Deep Learning (LSTM con Atención) e interfaz de chat interactiva para asesoramiento de trading en tiempo real.
+Sistema profesional de predicción y trading de Bitcoin con Deep Learning (LSTM + Atención), gestión avanzada de riesgo e interfaz de chat interactiva para operaciones en tiempo real.
 
-## 📋 Características
+## 📋 Características Principales
 
-- 🤖 **Modelo de Deep Learning Avanzado**: LSTM bidireccional con mecanismo de atención
-- 📊 **Análisis Técnico Completo**: Más de 100 indicadores técnicos (RSI, MACD, Bollinger Bands, etc.)
-- 💬 **Chat Interactivo**: Interfaz conversacional para consultar predicciones y recomendaciones
-- 📈 **Predicciones Multi-Horizonte**: Predice múltiples puntos en el futuro (configurable)
-- 🎯 **Sistema de Recomendaciones**: Asesoramiento automático basado en predicciones (Comprar/Vender/Mantener)
-- 🔄 **Datos en Tiempo Real**: Integración con Binance API para datos actualizados
-- 📉 **Análisis de Riesgo**: Evaluación de confianza y niveles de riesgo
+### 🤖 Modelo de IA de Producción
+- **LSTM Bidireccional con Atención**: Arquitectura avanzada de Deep Learning
+- **Predicciones Multi-Horizonte**: Hasta 24 horas adelante configurables
+- **Alta Precisión**: Entrenado con más de 100 indicadores técnicos
+- **Actualización Continua**: Reentrenamiento automático con datos recientes
 
-## 🏗️ Arquitectura del Proyecto
+### 💼 Gestión de Riesgo Profesional
+- **Position Sizing Automático**: Cálculo basado en volatilidad y confianza
+- **Stop Loss Dinámico**: Ajustado a ATR y volatilidad del mercado
+- **Take Profit Multi-Nivel**: 3 niveles con ratios risk/reward optimizados
+- **Límites de Drawdown**: Protección automática del capital
+- **Gestión de Capital**: Control de riesgo por trade y diario
+
+### 📊 Análisis Técnico Completo
+- **100+ Indicadores**: RSI, MACD, Bollinger Bands, ATR, ADX, Stochastic, OBV, VWAP
+- **Análisis de Tendencia**: Identificación automática de tendencias
+- **Momentum y Volatilidad**: Evaluación en tiempo real
+- **Volumen y Liquidez**: Análisis de flujos de mercado
+
+### 💬 Interfaz de Chat Interactiva
+- **Comandos en Lenguaje Natural**: Pregunta en español lo que necesites
+- **Recomendaciones Instantáneas**: Respuestas en tiempo real
+- **Análisis Completo**: Reportes detallados del mercado
+- **Gestión de Alertas**: Notificaciones personalizadas
+
+### 📈 Tracking y Métricas
+- **Win Rate y Profit Factor**: Métricas de rendimiento en tiempo real
+- **Sharpe Ratio**: Evaluación de performance ajustada por riesgo
+- **Historial de Trades**: Registro completo de operaciones
+- **P&L Tracking**: Seguimiento de ganancias y pérdidas
+
+### 🔔 Sistema de Alertas
+- **Alertas de Precio**: Notificaciones cuando BTC alcance niveles específicos
+- **Alertas de Indicadores**: RSI, MACD y otros indicadores técnicos
+- **Alertas de Predicción**: Basadas en confianza del modelo
+- **Historial Completo**: Registro de todas las alertas disparadas
+
+## 🏗️ Arquitectura del Sistema
 
 ```
 BTC/
 ├── src/
 │   ├── data/
-│   │   ├── data_collector.py       # Recopilación de datos de Binance
-│   │   └── feature_engineering.py  # Creación de características técnicas
+│   │   ├── data_collector.py       # Recopilación de Binance API
+│   │   └── feature_engineering.py  # Feature engineering (100+ indicators)
 │   ├── models/
-│   │   └── btc_predictor.py       # Modelo LSTM con atención
+│   │   └── btc_predictor.py       # LSTM con atención
+│   ├── utils/
+│   │   ├── risk_manager.py        # Gestión de riesgo avanzada
+│   │   └── alert_system.py        # Sistema de alertas
 │   └── chat/
 │       ├── advisor.py             # Sistema de asesoramiento
-│       └── chat_interface.py      # Interfaz de chat interactiva
-├── data/
-│   ├── raw/                       # Datos crudos de mercado
-│   └── processed/                 # Datos procesados con features
+│       └── chat_interface.py      # Interfaz de chat
+├── data/                          # Datos de mercado
 ├── models/                        # Modelos entrenados
-├── train_model.py                # Script de entrenamiento
-├── run_chat.py                   # Script para ejecutar el chat
-└── requirements.txt              # Dependencias
+├── train_model.py                # Pipeline de entrenamiento
+└── run_chat.py                   # Ejecutar sistema de trading
 ```
 
 ## 🚀 Inicio Rápido
@@ -39,37 +68,37 @@ BTC/
 ### 1. Instalación
 
 ```bash
-# Clonar el repositorio
+# Clonar repositorio
 git clone <repository-url>
 cd BTC
 
-# Crear entorno virtual (recomendado)
+# Crear entorno virtual
 python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Instalar dependencias
 pip install -r requirements.txt
 ```
 
-### 2. Entrenamiento del Modelo
+### 2. Entrenar el Modelo
 
 ```bash
-# Entrenamiento básico (180 días de datos históricos)
+# Entrenamiento estándar (180 días)
 python train_model.py
 
-# Entrenamiento personalizado
+# Entrenamiento avanzado
 python train_model.py --days 365 --epochs 150 --batch-size 64
 ```
 
-**Opciones disponibles:**
-- `--days`: Días de datos históricos (default: 180)
-- `--timeframe`: Intervalo de tiempo - 1h, 4h, 1d (default: 1h)
-- `--sequence-length`: Longitud de secuencia (default: 48)
-- `--prediction-horizon`: Horas a predecir (default: 6)
-- `--epochs`: Épocas de entrenamiento (default: 100)
-- `--batch-size`: Tamaño del batch (default: 32)
+**Opciones de Entrenamiento:**
+- `--days 365`: Días de datos históricos
+- `--timeframe 1h`: Intervalo (1h, 4h, 1d)
+- `--sequence-length 48`: Ventana de entrada
+- `--prediction-horizon 6`: Horas a predecir
+- `--epochs 150`: Épocas de entrenamiento
+- `--batch-size 64`: Tamaño de batch
 
-### 3. Usar el Chat Interactivo
+### 3. Iniciar Sistema de Trading
 
 ```bash
 python run_chat.py
@@ -77,144 +106,170 @@ python run_chat.py
 
 ## 💬 Comandos del Chat
 
-Una vez iniciado el chat, puedes hacer preguntas en lenguaje natural:
-
-### Consultas de Precio
+### Análisis y Predicciones
 ```
 ¿Cuál es el precio actual?
-¿A cuánto está el BTC?
-```
-
-### Recomendaciones de Trading
-```
 ¿Debería comprar ahora?
-¿Recomiendas vender?
-Dame una recomendación
-```
-
-### Análisis de Tendencia
-```
 ¿Cuál es la tendencia?
 ¿Va a subir o bajar?
-Muéstrame las predicciones
-```
-
-### Indicadores Técnicos
-```
-¿Cómo están los indicadores?
-Muéstrame el RSI
-¿Qué dice el MACD?
-```
-
-### Análisis Completo
-```
 Dame un análisis completo
-Reporte del mercado
+¿Cómo están los indicadores?
 ```
 
-### Otros Comandos
+### Gestión de Riesgo
 ```
-ayuda          # Muestra todos los comandos
-actualizar     # Actualiza datos del mercado
-salir          # Cierra el chat
+¿Cuánto debería comprar?
+Position size
+Balance
+Capital
+Performance
+Estadísticas
+```
+
+### Alertas
+```
+Crear alerta de precio 50000
+Crear alerta RSI bajo 30
+Ver alertas
+```
+
+### Otros
+```
+Actualizar    # Actualiza datos del mercado
+Ayuda         # Lista todos los comandos
+Salir         # Cierra el chat
 ```
 
 ## 🧠 Arquitectura del Modelo
 
-### Modelo LSTM con Atención
+### Red Neuronal LSTM con Atención
 
-El modelo utiliza una arquitectura avanzada de Deep Learning:
+```python
+Input (48 timesteps, 100+ features)
+    ↓
+Bidirectional LSTM (128 units) + Dropout
+    ↓
+Batch Normalization
+    ↓
+Bidirectional LSTM (64 units) + Dropout
+    ↓
+Batch Normalization
+    ↓
+Attention Layer (mecanismo de atención)
+    ↓
+Dense (64 units, ReLU) + Dropout
+    ↓
+Dense (32 units, ReLU) + Dropout
+    ↓
+Output (6 predicciones)
+```
 
-1. **Capas LSTM Bidireccionales**: Capturan patrones temporales en ambas direcciones
-2. **Mecanismo de Atención**: Enfoca el modelo en las características más relevantes
-3. **Batch Normalization**: Mejora la estabilidad del entrenamiento
-4. **Dropout Layers**: Previene overfitting
-5. **Dense Layers**: Transformación final para predicciones multi-horizonte
+**Optimización:**
+- Loss Function: Huber (robusta a outliers)
+- Optimizer: Adam con learning rate adaptativo
+- Callbacks: Early Stopping, ReduceLROnPlateau, Model Checkpoint
 
-### Características Técnicas (100+)
+## 💰 Gestión de Riesgo
 
-#### Indicadores de Tendencia
-- SMA (7, 14, 21, 50, 100, 200)
-- EMA (7, 14, 21, 50, 100, 200)
-- MACD y señales
+### Cálculo Automático de Position Size
+
+El sistema calcula automáticamente el tamaño óptimo de posición basado en:
+- Capital disponible
+- Distancia al stop loss
+- Nivel de confianza de la predicción
+- Riesgo máximo por trade (default: 2%)
+
+```python
+# Ejemplo de respuesta
+Tamaño de Posición:
+  BTC: 0.04500000
+  USDT: $2,000.00
+
+Capital en Riesgo: $200.00 (2.00%)
+Stop Loss: $44,100.00
+Take Profit: $47,500.00
+```
+
+### Protección de Capital
+
+- **Riesgo por Trade**: Máximo 2% del capital
+- **Pérdida Diaria Máxima**: 5% del capital
+- **Drawdown Máximo**: 20% del capital
+- **Bloqueo Automático**: Suspende trading si se alcanzan límites
+
+## 📊 Indicadores Técnicos Implementados
+
+### Tendencia (Trend)
+- SMA: 7, 14, 21, 50, 100, 200 periodos
+- EMA: 7, 14, 21, 50, 100, 200 periodos
+- MACD + Señal + Histograma
 - ADX (Average Directional Index)
 
-#### Indicadores de Momentum
-- RSI (6, 12, 14, 24)
+### Momentum
+- RSI: 6, 12, 14, 24 periodos
 - Stochastic Oscillator
 - Rate of Change (ROC)
 
-#### Indicadores de Volatilidad
-- Bollinger Bands (20, 50)
-- Average True Range (ATR)
+### Volatilidad
+- Bollinger Bands: 20, 50 periodos
+- Average True Range (ATR): 14, 21 periodos
 - Volatilidad histórica
 
-#### Indicadores de Volumen
+### Volumen
 - On-Balance Volume (OBV)
 - Volume Weighted Average Price (VWAP)
 - Ratios de volumen
 
-#### Características de Precio
-- Returns (1, 3, 6, 12, 24 períodos)
-- Log returns
-- Rangos de precio
-- Momentum
+### Características de Precio
+- Returns: 1, 3, 6, 12, 24 periodos
+- Log Returns
+- High/Low Ranges
+- Price Position in Range
 
-#### Características Temporales
-- Hora del día (encoding cíclico)
+### Características Temporales
+- Hora (encoding cíclico sin/cos)
 - Día de la semana
-- Mes del año
+- Mes
 - Quarter
 
-## 📊 Sistema de Recomendaciones
+## 📈 Métricas de Performance
 
-El sistema analiza múltiples factores para generar recomendaciones:
+El sistema trackea automáticamente:
 
-### Niveles de Confianza
-- **Alta (>70%)**: Señal fuerte, tendencia clara
-- **Media (50-70%)**: Señal moderada, cierta incertidumbre
-- **Baja (<50%)**: Mercado lateral, esperar
+- **Win Rate**: Porcentaje de trades ganadores
+- **Profit Factor**: Ganancias totales / Pérdidas totales
+- **Sharpe Ratio**: Retorno ajustado por riesgo
+- **Average Win**: Ganancia promedio por trade ganador
+- **Average Loss**: Pérdida promedio por trade perdedor
+- **Total P&L**: Ganancia/pérdida neta
+- **Drawdown**: Caída máxima desde pico de capital
 
-### Niveles de Riesgo
-- **BAJO**: Tendencia fuerte confirmada por múltiples indicadores
-- **MEDIO**: Tendencia moderada, algunos indicadores mixtos
-- **ALTO**: Sin tendencia clara, alta volatilidad
+## 🔔 Sistema de Alertas
 
-### Tipos de Recomendaciones
-1. **COMPRAR**: Tendencia alcista fuerte
-2. **COMPRAR (CAUTELOSO)**: Tendencia alcista moderada
-3. **VENDER**: Tendencia bajista fuerte
-4. **VENDER (CAUTELOSO)**: Tendencia bajista moderada
-5. **MANTENER/ESPERAR**: Sin tendencia clara
+### Tipos de Alertas
 
-Cada recomendación incluye:
-- Precio objetivo
-- Stop loss sugerido
-- Cambio esperado en porcentaje
-- Análisis detallado de la razón
+1. **Alertas de Precio**
+   - Notifica cuando BTC alcanza precio objetivo
+   - Direcciones: above/below
 
-## 📈 Ejemplo de Uso
+2. **Alertas de Indicadores**
+   - RSI en sobrecompra/sobreventa
+   - MACD cruza señal
+   - Cualquier indicador técnico
+
+3. **Alertas de Predicción**
+   - Alta confianza (>75%)
+   - Tendencia específica (alcista/bajista)
+
+### Ejemplo de Uso
 
 ```python
-from src.models.btc_predictor import BTCPredictor
-from src.data.data_collector import BTCDataCollector
-from src.data.feature_engineering import FeatureEngineer
+# En el chat
+"Crear alerta de precio 50000"
+→ Alerta creada: Te notificaremos cuando BTC llegue a $50,000
 
-# Cargar modelo entrenado
-predictor = BTCPredictor()
-predictor.load('models/btc_predictor')
-
-# Obtener datos actuales
-collector = BTCDataCollector()
-df = collector.fetch_ohlcv(timeframe='1h', limit=100)
-
-# Crear características
-fe = FeatureEngineer()
-df_features = fe.create_all_features(df)
-
-# Hacer predicción
-predictions = predictor.predict(df_features)
-print(f"Predicciones: {predictions}")
+"Ver alertas"
+→ Lista de todas tus alertas activas
 ```
 
 ## ⚙️ Configuración Avanzada
@@ -222,89 +277,140 @@ print(f"Predicciones: {predictions}")
 ### Variables de Entorno (.env)
 
 ```bash
-# API Keys de Binance (opcional)
-BINANCE_API_KEY=your_key
-BINANCE_SECRET_KEY=your_secret
+# Binance API (opcional - no requerido para datos públicos)
+BINANCE_API_KEY=your_api_key
+BINANCE_SECRET_KEY=your_secret_key
 
 # Configuración del modelo
 MODEL_UPDATE_INTERVAL=3600
 PREDICTION_HORIZON=24
+
+# Gestión de riesgo
+INITIAL_CAPITAL=10000
+MAX_RISK_PER_TRADE=0.02
+MAX_DAILY_LOSS=0.05
+MAX_DRAWDOWN=0.20
 ```
 
 ### Personalización del Modelo
 
-Edita `src/models/btc_predictor.py` para ajustar:
+Edita `src/models/btc_predictor.py`:
+```python
+# Arquitectura
 - Número de capas LSTM
-- Unidades por capa
-- Tasa de dropout
-- Función de pérdida
-- Optimizador
+- Unidades por capa (128, 64)
+- Dropout rate (0.2, 0.3)
 
-## 📊 Métricas del Modelo
+# Entrenamiento
+- Learning rate (0.001)
+- Loss function (huber)
+- Batch size (32)
+```
 
-El modelo se evalúa con múltiples métricas:
+## 📊 Ejemplo de Uso Programático
 
-- **MAE (Mean Absolute Error)**: Error absoluto promedio
-- **MSE (Mean Squared Error)**: Error cuadrático medio
-- **MAPE (Mean Absolute Percentage Error)**: Error porcentual promedio
-- **Huber Loss**: Pérdida robusta a outliers
+```python
+from src.models.btc_predictor import BTCPredictor
+from src.data.data_collector import BTCDataCollector
+from src.data.feature_engineering import FeatureEngineer
+from src.utils.risk_manager import RiskManager
 
-## ⚠️ Disclaimer
+# Cargar modelo
+predictor = BTCPredictor()
+predictor.load('models/btc_predictor')
 
-**IMPORTANTE**: Este sistema es para fines educativos y de investigación.
+# Obtener datos
+collector = BTCDataCollector()
+df = collector.fetch_ohlcv(timeframe='1h', limit=100)
 
-- ❌ **NO** es asesoramiento financiero profesional
-- ❌ **NO** garantiza ganancias en trading
-- ❌ Las criptomonedas son altamente volátiles
-- ✅ Siempre haz tu propia investigación (DYOR)
-- ✅ Invierte solo lo que puedas permitirte perder
-- ✅ Consulta con profesionales financieros antes de tomar decisiones
+# Feature engineering
+fe = FeatureEngineer()
+df_features = fe.create_all_features(df)
+
+# Predicción
+predictions = predictor.predict(df_features)
+print(f"Predicciones: {predictions}")
+
+# Calcular position size
+rm = RiskManager(initial_capital=10000)
+current_price = collector.get_current_price()
+stop_loss = rm.calculate_stop_loss(current_price, 'long')
+position = rm.calculate_position_size(current_price, stop_loss)
+
+print(f"Position Size: {position}")
+```
 
 ## 🔧 Troubleshooting
 
-### Error al conectar con Binance
+### Error de Conexión a Binance
 ```bash
-# Verifica tu conexión a internet
-# Binance API es pública, no requiere keys para datos de mercado
+# Verifica conexión a internet
+ping api.binance.com
+
+# Binance API pública no requiere keys
+# Solo necesitas keys para trading real
 ```
 
-### Modelo no encontrado
+### Modelo No Encontrado
 ```bash
 # Entrena el modelo primero
 python train_model.py
 ```
 
-### Errores de memoria durante entrenamiento
+### Errores de Memoria
 ```bash
-# Reduce el batch size
+# Reduce batch size
 python train_model.py --batch-size 16
+
+# Reduce días de entrenamiento
+python train_model.py --days 90
 ```
+
+### Actualizar Modelo
+```bash
+# Reentrenar con datos frescos
+python train_model.py --days 180 --epochs 100
+```
+
+## 📝 Roadmap
+
+- [ ] Integración con exchange para trading automático
+- [ ] Soporte para múltiples pares (ETH, BNB, etc.)
+- [ ] Dashboard web con gráficos en vivo
+- [ ] Backtesting histórico completo
+- [ ] Optimización de hiperparámetros automática
+- [ ] Ensemble de múltiples modelos
+- [ ] Sentimiento de redes sociales
+- [ ] API REST para integración
 
 ## 🤝 Contribuciones
 
-Las contribuciones son bienvenidas:
+Contribuciones son bienvenidas:
 
 1. Fork el proyecto
-2. Crea tu feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+2. Crea feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit cambios (`git commit -m 'Add AmazingFeature'`)
 4. Push al branch (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+5. Abre Pull Request
 
 ## 📝 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detalles.
+MIT License - Ver [LICENSE](LICENSE)
 
-## 🙏 Agradecimientos
+## 🙏 Tecnologías
 
-- [CCXT](https://github.com/ccxt/ccxt) - Biblioteca de exchanges de criptomonedas
-- [TA-Lib](https://github.com/mrjbq7/ta-lib) - Indicadores técnicos
-- [TensorFlow](https://www.tensorflow.org/) - Framework de Deep Learning
-- [Binance](https://www.binance.com/) - Exchange de criptomonedas
+- [TensorFlow/Keras](https://www.tensorflow.org/) - Deep Learning Framework
+- [CCXT](https://github.com/ccxt/ccxt) - Exchange API
+- [TA-Lib](https://github.com/mrjbq7/ta-lib) - Indicadores Técnicos
+- [Pandas](https://pandas.pydata.org/) - Data Analysis
+- [NumPy](https://numpy.org/) - Numerical Computing
+- [Binance](https://www.binance.com/) - Exchange de Criptomonedas
 
-## 📧 Contacto
+## 📧 Soporte
 
-Para preguntas, sugerencias o reportar bugs, abre un issue en GitHub.
+Para issues, sugerencias o reportar bugs, abre un issue en GitHub.
 
 ---
 
-**Creado con ❤️ para la comunidad de trading de criptomonedas**
+**Desarrollado para traders profesionales de criptomonedas** 📈💰
+
