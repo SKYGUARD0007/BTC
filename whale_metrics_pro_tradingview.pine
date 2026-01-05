@@ -301,17 +301,13 @@ hline(3.5, "MVRV Top", color=color.red, linestyle=hline.style_dashed)
 hline(1.0, "MVRV Bottom", color=color.green, linestyle=hline.style_dashed)
 
 // --- Señales de Compra/Venta en Chart ---
-plotshape(show_signals and buy_strong_signal, "Buy Strong", shape.labelup, location.belowbar,
-         color=color.new(color.green, 0), text="COMPRAR\nFUERTE", textcolor=color.white, size=size.large)
+plotshape(show_signals and buy_strong_signal, "Buy Strong", shape.labelup, location.belowbar, color=color.new(color.green, 0), text="COMPRAR\nFUERTE", textcolor=color.white, size=size.large)
 
-plotshape(show_signals and buy_signal, "Buy", shape.triangleup, location.belowbar,
-         color=color.new(color.lime, 0), text="Buy", textcolor=color.white, size=size.small)
+plotshape(show_signals and buy_signal, "Buy", shape.triangleup, location.belowbar, color=color.new(color.lime, 0), text="Buy", textcolor=color.white, size=size.small)
 
-plotshape(show_signals and sell_signal, "Sell", shape.triangledown, location.abovebar,
-         color=color.new(color.orange, 0), text="Sell", textcolor=color.white, size=size.small)
+plotshape(show_signals and sell_signal, "Sell", shape.triangledown, location.abovebar, color=color.new(color.orange, 0), text="Sell", textcolor=color.white, size=size.small)
 
-plotshape(show_signals and sell_strong_signal, "Sell Strong", shape.labeldown, location.abovebar,
-         color=color.new(color.red, 0), text="VENDER\nFUERTE", textcolor=color.white, size=size.large)
+plotshape(show_signals and sell_strong_signal, "Sell Strong", shape.labeldown, location.abovebar, color=color.new(color.red, 0), text="VENDER\nFUERTE", textcolor=color.white, size=size.large)
 
 // --- Background color según señal ---
 bgcolor_color =
@@ -348,15 +344,10 @@ plot(any_buy ? tp3_price : na, "TP3 (+50%)", color=color.purple, style=plot.styl
 
 if show_table
     // Crear tabla en esquina superior derecha
-    var table metrics_table = table.new(position.top_right, 3, 9,
-                                        border_width=2,
-                                        border_color=color.gray,
-                                        frame_width=2,
-                                        frame_color=color.white)
+    var table metrics_table = table.new(position.top_right, 3, 9, border_width=2, border_color=color.gray, frame_width=2, frame_color=color.white)
 
     // Header
-    table.cell(metrics_table, 0, 0, "🐋 WHALE METRICS PRO",
-              bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.normal)
+    table.cell(metrics_table, 0, 0, "🐋 WHALE METRICS PRO", bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.normal)
     table.merge_cells(metrics_table, 0, 0, 2, 0)
 
     // Métricas individuales
@@ -392,14 +383,11 @@ if show_table
       total_score <= sell_strong_threshold ? color.new(color.red, 0) :
       total_score <= sell_threshold ? color.new(color.orange, 0) :
       color.white
-    table.cell(metrics_table, 1, 7, str.tostring(total_score, "#.#"),
-              text_color=score_color, text_size=size.large)
-    table.cell(metrics_table, 2, 7, str.tostring(confidence, "#.#") + "%",
-              text_color=color.white, text_size=size.small)
+    table.cell(metrics_table, 1, 7, str.tostring(total_score, "#.#"), text_color=score_color, text_size=size.large)
+    table.cell(metrics_table, 2, 7, str.tostring(confidence, "#.#") + "%", text_color=color.white, text_size=size.small)
 
     // Señal final
-    table.cell(metrics_table, 0, 8, signal_text,
-              bgcolor=score_color, text_color=color.white, text_size=size.normal)
+    table.cell(metrics_table, 0, 8, signal_text, bgcolor=score_color, text_color=color.white, text_size=size.normal)
     table.merge_cells(metrics_table, 0, 8, 2, 8)
 
 // ============================================================================
