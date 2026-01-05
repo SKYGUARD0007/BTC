@@ -11,6 +11,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.risk_manager import RiskManager
 from utils.alert_system import AlertSystem
+from data.onchain_data import OnChainDataCollector, WhaleDetector
 
 
 class TradingAdvisor:
@@ -34,6 +35,11 @@ class TradingAdvisor:
         # Risk management y alertas
         self.risk_manager = RiskManager(initial_capital=initial_capital)
         self.alert_system = AlertSystem()
+
+        # On-chain data y detección de ballenas
+        self.onchain_collector = OnChainDataCollector()
+        self.whale_detector = WhaleDetector(whale_threshold=100)
+        self.onchain_signals = None
 
     def update_data(self):
         """Actualiza datos del mercado"""
@@ -69,6 +75,33 @@ class TradingAdvisor:
             return self.predictions
         except Exception as e:
             print(f"Error making prediction: {e}")
+            return None
+
+    def get_onchain_signals(self):
+        """
+        Obtiene señales on-chain (ballenas, métricas de blockchain)
+
+        Returns:
+            dict: Señales on-chain
+        """
+        try:
+            self.onchain_signals = self.onchain_collector.get_onchain_signals()
+            return self.onchain_signals
+        except Exception as e:
+            print(f"Error obteniendo señales on-chain: {e}")
+            return None
+
+    def detect_whales(self):
+        """
+        Detecta movimientos de ballenas
+
+        Returns:
+            dict: Análisis de ballenas
+        """
+        try:
+            return self.whale_detector.detect_whale_movements()
+        except Exception as e:
+            print(f"Error detectando ballenas: {e}")
             return None
 
     def analyze_trend(self):
@@ -121,10 +154,10 @@ class TradingAdvisor:
 
     def get_recommendation(self):
         """
-        Genera recomendación de trading
+        Genera recomendación de trading basada en IA y señales on-chain
 
         Returns:
-            dict: Recomendación detallada
+            dict: Recomendación detallada con señales on-chain
         """
         analysis = self.analyze_trend()
 
@@ -139,27 +172,87 @@ class TradingAdvisor:
         avg_change = analysis['avg_change']
         confidence = analysis['confidence']
 
-        # Lógica de recomendación
-        if trend == "ALCISTA FUERTE" and confidence > 70:
-            action = "COMPRAR"
-            reason = f"Tendencia alcista fuerte detectada. Se espera un incremento promedio de {avg_change:.2f}% en las próximas {len(self.predictions)} horas."
+        # Obtener señales on-chain y de ballenas
+        print("  🔗 Analizando señales on-chain...")
+        onchain = self.get_onchain_signals()
+        whale_analysis = self.detect_whales()
+
+        # Ajustar confianza basado en señales on-chain
+        onchain_boost = 0
+        onchain_reasons = []
+
+        if onchain and whale_analysis:
+            # Análisis de ballenas
+            if whale_analysis.get('detected'):
+                whale_signal = whale_analysis.get('signal', '')
+                whale_count = whale_analysis.get('whale_count', 0)
+
+                if 'ACUMULACIÓN' in whale_signal and whale_count > 10:
+                    onchain_boost += 15
+                    onchain_reasons.append(f"🐋 {whale_count} ballenas acumulando ({whale_analysis['total_volume']:,.0f} BTC)")
+                elif 'ACUMULACIÓN' in whale_signal and whale_count > 5:
+                    onchain_boost += 10
+                    onchain_reasons.append(f"🐋 Actividad de ballenas detectada ({whale_count} movimientos)")
+
+            # Señal general on-chain
+            overall_onchain = onchain.get('overall_signal', {})
+            if 'COMPRAR' in overall_onchain.get('action', ''):
+                onchain_boost += 10
+                onchain_reasons.append(f"⛓️ {overall_onchain.get('whale_signal', '')}")
+
+        # Ajustar confianza final
+        final_confidence = min(confidence + onchain_boost, 95)
+
+        # Lógica de recomendación mejorada con on-chain
+        if trend == "ALCISTA FUERTE" and final_confidence > 70:
+            action = "COMPRAR FUERTE" if onchain_boost > 15 else "COMPRAR"
+            reason = f"Tendencia alcista fuerte detectada. Incremento esperado: {avg_change:.2f}%"
+            if onchain_reasons:
+                reason += f" | {' | '.join(onchain_reasons)}"
             risk_level = "BAJO"
-        elif trend == "ALCISTA" and confidence > 60:
-            action = "COMPRAR (CAUTELOSO)"
-            reason = f"Tendencia alcista moderada. Incremento esperado de {avg_change:.2f}%."
-            risk_level = "MEDIO"
-        elif trend == "BAJISTA FUERTE" and confidence > 70:
-            action = "VENDER"
-            reason = f"Tendencia bajista fuerte. Se espera una caída de {abs(avg_change):.2f}%."
-            risk_level = "BAJO"
-        elif trend == "BAJISTA" and confidence > 60:
-            action = "VENDER (CAUTELOSO)"
-            reason = f"Tendencia bajista moderada. Caída esperada de {abs(avg_change):.2f}%."
-            risk_level = "MEDIO"
+
+        elif trend == "ALCISTA" and final_confidence > 60:
+            action = "COMPRAR" if onchain_boost > 10 else "COMPRAR (CAUTELOSO)"
+            reason = f"Tendencia alcista moderada. Incremento esperado: {avg_change:.2f}%"
+            if onchain_reasons:
+                reason += f" | {' | '.join(onchain_reasons)}"
+            risk_level = "MEDIO" if onchain_boost < 10 else "BAJO"
+
+        elif trend == "BAJISTA FUERTE" and final_confidence > 70:
+            # Si hay acumulación de ballenas, reducir señal bajista
+            if onchain_boost > 15:
+                action = "ESPERAR - Señales Mixtas"
+                reason = f"Tendencia bajista pero ballenas acumulando. Esperar confirmación."
+                risk_level = "MEDIO"
+            else:
+                action = "VENDER"
+                reason = f"Tendencia bajista fuerte. Caída esperada: {abs(avg_change):.2f}%"
+                risk_level = "BAJO"
+
+        elif trend == "BAJISTA" and final_confidence > 60:
+            if onchain_boost > 10:
+                action = "ESPERAR - Señales Contradictorias"
+                reason = "Tendencia bajista pero actividad de ballenas sugiere acumulación"
+                risk_level = "MEDIO"
+            else:
+                action = "VENDER (CAUTELOSO)"
+                reason = f"Tendencia bajista moderada. Caída esperada: {abs(avg_change):.2f}%"
+                risk_level = "MEDIO"
+
         else:
-            action = "MANTENER/ESPERAR"
-            reason = "Mercado lateral o sin tendencia clara. Se recomienda esperar señales más fuertes."
-            risk_level = "ALTO"
+            # Mercado lateral - dejarse guiar más por on-chain
+            if onchain_boost > 15:
+                action = "COMPRAR (SEÑAL ON-CHAIN)"
+                reason = f"Mercado lateral pero fuerte actividad de ballenas | {' | '.join(onchain_reasons)}"
+                risk_level = "MEDIO"
+            elif onchain_boost > 10:
+                action = "MONITOREAR - Actividad de Ballenas"
+                reason = f"Mercado lateral con actividad de ballenas | {' | '.join(onchain_reasons)}"
+                risk_level = "MEDIO"
+            else:
+                action = "MANTENER/ESPERAR"
+                reason = "Mercado lateral sin señales claras. Esperar mejor oportunidad."
+                risk_level = "ALTO"
 
         # Calcular niveles de precio objetivo
         target_price = self.predictions[-1]  # Última predicción
@@ -168,13 +261,17 @@ class TradingAdvisor:
         return {
             'action': action,
             'reason': reason,
-            'confidence': confidence,
+            'confidence': round(final_confidence, 2),
+            'ai_confidence': round(confidence, 2),
+            'onchain_boost': round(onchain_boost, 2),
             'risk_level': risk_level,
             'current_price': round(self.current_price, 2),
             'target_price': round(target_price, 2),
             'stop_loss': round(stop_loss, 2),
             'expected_change': f"{avg_change:+.2f}%",
-            'analysis': analysis
+            'analysis': analysis,
+            'whale_activity': whale_analysis,
+            'onchain_signals': onchain
         }
 
     def get_market_analysis(self):
@@ -304,6 +401,39 @@ class TradingAdvisor:
 
             return response
 
+        elif "ballena" in question or "whale" in question or "onchain" in question or "on-chain" in question or "on chain" in question:
+            whale_analysis = self.detect_whales()
+            onchain = self.get_onchain_signals()
+
+            response = "🐋 ANÁLISIS DE BALLENAS Y ON-CHAIN\n\n"
+
+            # Información de ballenas
+            if whale_analysis and whale_analysis.get('detected'):
+                response += f"⚠️ ACTIVIDAD DE BALLENAS DETECTADA\n\n"
+                response += f"Transacciones Grandes: {whale_analysis['whale_count']}\n"
+                response += f"Volumen Total: {whale_analysis['total_volume']:,.2f} BTC\n"
+                response += f"Señal: {whale_analysis['signal']}\n"
+                response += f"Confianza: {whale_analysis['confidence']}%\n\n"
+                response += f"💡 {whale_analysis['message']}\n\n"
+                response += f"🎯 Recomendación: {whale_analysis['recommendation']}"
+
+                if whale_analysis.get('transactions'):
+                    response += "\n\n📊 ÚLTIMAS TRANSACCIONES GRANDES:\n"
+                    for i, tx in enumerate(whale_analysis['transactions'][:3], 1):
+                        response += f"  {i}. {tx['size_btc']:,.2f} BTC - {tx['time'].strftime('%H:%M:%S')}\n"
+            else:
+                response += "No se detectó actividad significativa de ballenas.\n\n"
+
+            # Señales on-chain
+            if onchain:
+                overall = onchain.get('overall_signal', {})
+                response += f"\n⛓️ SEÑAL ON-CHAIN GENERAL\n\n"
+                response += f"Acción: {overall.get('action', 'N/A')}\n"
+                response += f"Confianza: {overall.get('confidence', 0):.1f}%\n"
+                response += f"Razón: {overall.get('reasoning', 'N/A')}"
+
+            return response
+
         elif "capital" in question or "balance" in question or "portafolio" in question:
             stats = self.risk_manager.get_performance_stats()
             response = f"💰 ESTADO DEL PORTAFOLIO\n\n"
@@ -406,24 +536,29 @@ Ejemplos:
 
 ANÁLISIS Y PREDICCIONES:
 1. "¿Cuál es el precio actual?" - Precio actual de BTC/USDT
-2. "¿Debería comprar/vender?" - Recomendación de trading
+2. "¿Debería comprar/vender?" - Recomendación de trading (incluye señales on-chain)
 3. "¿Cuál es la tendencia?" - Análisis de tendencia y predicciones
 4. "¿Cómo están los indicadores?" - Indicadores técnicos (RSI, MACD)
 5. "Análisis completo" - Reporte detallado del mercado
 
+DATOS ON-CHAIN (NUEVO):
+6. "Ballenas" / "Whales" / "On-chain" - Detecta movimientos de ballenas
+   └─ Analiza transacciones grandes y señales blockchain
+
 GESTIÓN DE RIESGO:
-6. "¿Cuánto comprar?" / "Position size" - Cálculo de tamaño de posición
-7. "Balance" / "Capital" - Estado del portafolio
-8. "Performance" / "Estadísticas" - Métricas de rendimiento
+7. "¿Cuánto comprar?" / "Position size" - Cálculo de tamaño de posición
+8. "Balance" / "Capital" - Estado del portafolio
+9. "Performance" / "Estadísticas" - Métricas de rendimiento
 
 ALERTAS:
-9. "Crear alerta" - Información sobre alertas
-10. "Ver alertas" - Alertas activas
+10. "Crear alerta" - Información sobre alertas
+11. "Ver alertas" - Alertas activas
 
-11. "Actualizar" - Actualiza datos del mercado
-12. "Ayuda" - Muestra este mensaje
+12. "Actualizar" - Actualiza datos del mercado
+13. "Ayuda" - Muestra este mensaje
 
-💡 Puedes hacer preguntas en lenguaje natural!"""
+💡 Puedes hacer preguntas en lenguaje natural!
+🐋 Las recomendaciones ahora incluyen análisis de ballenas automáticamente!"""
 
         elif "analisis completo" in question or "reporte" in question:
             rec = self.get_recommendation()
